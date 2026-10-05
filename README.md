@@ -35,12 +35,16 @@ Update later with `npx skills update annotated-diff`.
 | Agent | Install | Update |
 |---|---|---|
 | Claude Code | `/plugin marketplace add thomas-lane/annotated-diff`<br>`/plugin install annotated-diff@annotated-diff` | `/plugin marketplace update annotated-diff` |
-| Codex | `codex plugin marketplace add thomas-lane/annotated-diff`<br>`codex plugin add annotated-diff@annotated-diff` | `codex plugin marketplace upgrade annotated-diff` |
-| Pi | `pi install git:github.com/thomas-lane/annotated-diff`<br>(SSH: `pi install git:git@github.com:thomas-lane/annotated-diff`) | `pi update git:github.com/thomas-lane/annotated-diff` |
+| Codex | `codex plugin marketplace add thomas-lane/annotated-diff`<br>`codex plugin add annotated-diff@annotated-diff` | `codex plugin marketplace upgrade annotated-diff`, then the `plugin add` again |
+| Pi | `pi install git:github.com/thomas-lane/annotated-diff` | `pi update git:github.com/thomas-lane/annotated-diff` |
 
 The Claude Code commands also work from a shell as `claude plugin marketplace add ...` and
-`claude plugin install ...`. Claude Code tries SSH first; set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1`
-on a machine without a GitHub SSH key. Start a new session (or restart Codex) after installing.
+`claude plugin install ...`. Start a new session (or restart Codex) after installing.
+
+Git access: Claude Code tries SSH first, then HTTPS (set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` to
+skip SSH); `npx skills` tries HTTPS, then the GitHub CLI, then SSH; Codex and Pi clone over
+HTTPS. With an SSH key only, give Codex `git@github.com:thomas-lane/annotated-diff.git` and Pi
+`git:git@github.com:thomas-lane/annotated-diff`.
 
 Requirements on the machine: `python3` 3.9 or later and `git`. Nothing else is installed.
 
