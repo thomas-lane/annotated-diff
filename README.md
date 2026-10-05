@@ -35,7 +35,7 @@ Update later with `npx skills update annotated-diff`.
 | Agent | Install | Update |
 |---|---|---|
 | Claude Code | `/plugin marketplace add thomas-lane/annotated-diff`<br>`/plugin install annotated-diff@annotated-diff` | `/plugin marketplace update annotated-diff` |
-| Codex | `codex plugin marketplace add thomas-lane/annotated-diff`<br>`codex plugin add annotated-diff@annotated-diff` | `codex plugin marketplace upgrade annotated-diff`, then the `plugin add` again |
+| Codex | `codex plugin marketplace add thomas-lane/annotated-diff`<br>`codex plugin add annotated-diff@annotated-diff` | `codex plugin marketplace upgrade annotated-diff` |
 | Pi | `pi install git:github.com/thomas-lane/annotated-diff` | `pi update git:github.com/thomas-lane/annotated-diff` |
 
 The Claude Code commands also work from a shell as `claude plugin marketplace add ...` and
