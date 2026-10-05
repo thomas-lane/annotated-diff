@@ -6,11 +6,16 @@ allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/annotated_diff.py *)
 
 # Annotated diff
 
-`${CLAUDE_SKILL_DIR}/scripts/annotated_diff.py` renders one self-contained HTML page: each changed
-file in full, GitHub-style, with your notes as cards in the right margin beside the lines they
-explain. The page has a "Changes only" toggle, an inline-notes mode (automatic on narrow
+`scripts/annotated_diff.py`, next to this file, renders one self-contained HTML page: each
+changed file in full, GitHub-style, with your notes as cards in the right margin beside the lines
+they explain. The page has a "Changes only" toggle, an inline-notes mode (automatic on narrow
 screens), ↑/↓ note navigation (j/k keys), and a panel for notes that are not tied to a line. It
 needs only `python3` (3.9+, standard library) and, in git mode, `git`.
+
+Paths to the script are relative to this skill's directory (the directory containing this
+`SKILL.md`), not to the project. Below, `<skill-dir>` stands for that directory's absolute path:
+substitute it (quoted if it contains spaces) when you run the script, and run everything else
+from the project being reviewed.
 
 ## 1. Choose what to compare
 
@@ -83,7 +88,7 @@ reading order.
 ## 3. Render, check, open
 
 ```bash
-python3 "${CLAUDE_SKILL_DIR}/scripts/annotated_diff.py" --repo . --base <REF> \
+python3 <skill-dir>/scripts/annotated_diff.py --repo . --base <REF> \
   --notes /path/to/notes.json --title "What changed" --subtitle "since \`<REF>\`" \
   --out /path/to/review.html --open
 ```
@@ -101,7 +106,8 @@ Then:
    found, matches a removed or unchanged line, file not in the diff) and is shown on the page
    under "line not found". Ambiguous anchors are reported too. Fix the anchors and run again until
    stderr is clean (or run with `--strict` to make it fail).
-2. Open the page (`--open`, or `open`/`xdg-open` the file) and give the user the path.
+2. Open the page (`--open`, or `open`/`xdg-open` the file) and give the user the path. If the
+   browser cannot be opened from where you run (a sandbox, a remote machine), just give the path.
 3. Optional: if a browser automation tool is available, screenshot the page to check it renders
    (cards beside their lines, no "line not found" entries you did not intend).
 

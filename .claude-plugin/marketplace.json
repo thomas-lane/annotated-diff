@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "annotated-diff",
-      "source": "./plugins/annotated-diff",
+      "source": "./",
       "description": "Render whole-file diffs with review notes anchored to changed lines, as one self-contained HTML page."
     }
   ]

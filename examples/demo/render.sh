@@ -3,7 +3,7 @@
 # Usage: examples/demo/render.sh [OUT.html] [--open]
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
-script="$here/../../plugins/annotated-diff/skills/annotated-diff/scripts/annotated_diff.py"
+script="$here/../../skills/annotated-diff/scripts/annotated_diff.py"
 out=${1:-"${TMPDIR:-/tmp}/annotated-diff-demo.html"}
 [ $# -gt 0 ] && shift
 python3 "$script" \

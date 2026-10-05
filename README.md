@@ -1,130 +1,156 @@
+<p align="center">
+  <img src="assets/banner.png" alt="A code diff with red and green lines, and review note cards in the margin linked to the changed lines" width="100%">
+</p>
+
 # annotated-diff
 
-A Claude Code skill (and a standalone script) that renders one self-contained HTML page showing
-what changed and why: whole files GitHub-style (red/green lines, old and new line numbers, full
-context) with review notes as cards in the right margin, next to the lines they explain.
+Ask your coding agent to show you what it changed, and get a browser page instead of a wall of
+terminal output: every changed file in full, GitHub-style, with the agent's notes on **why** each
+change was made as cards in the margin, right next to the lines they explain.
 
-It is meant for a human reviewing an agent's work in a browser instead of a terminal.
+It is an agent skill for [Claude Code](https://code.claude.com), [OpenAI Codex](https://developers.openai.com/codex)
+and [Pi](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent). The agent writes
+the notes, renders the page and opens it; you read and review.
 
-The page has:
-
-- margin cards aligned with their lines, stacked so they never overlap, and linked to their lines
-  on hover (click a card to jump to its line, click a line's pin to jump to its card);
-- "Changes only": hides unchanged lines behind expandable "N unchanged lines" bars;
-- "Notes inline": cards as rows under their lines (automatic on narrow screens);
-- ↑/↓ note navigation, also with the j/k keys;
-- jump links per file, and a panel for notes not tied to a line, including notes whose anchor was
-  not found (marked "line not found");
-- light and dark themes that follow the system setting;
-- no external requests: one HTML file with inline CSS and JS.
-
-The script is a single file, `python3` 3.9+ with the standard library only (plus `git` in git
-mode).
+<p align="center">
+  <img src="assets/screenshot-light.png" alt="The demo page: a Python file diff with numbered note cards in the right margin, beside the lines they explain" width="100%">
+</p>
 
 ## Install
 
-### As a Claude Code plugin
+The repository is private: every method below clones it with your own git access (an SSH key
+for GitHub, or for HTTPS run `gh auth login` and then `gh auth setup-git`).
 
-The repository is a plugin marketplace. In a Claude Code session:
-
-```
-/plugin marketplace add thomas-lane/annotated-diff
-/plugin install annotated-diff@annotated-diff
-```
-
-Or from a shell:
+**All three agents at once**, with the [`skills`](https://github.com/vercel-labs/skills) CLI
+(needs Node.js):
 
 ```bash
-claude plugin marketplace add thomas-lane/annotated-diff
-claude plugin install annotated-diff@annotated-diff
+npx skills add thomas-lane/annotated-diff -g -a claude-code -a codex -a pi
 ```
 
-The repository is private, so the machine needs git access to it: an SSH key for GitHub, or for
-HTTPS run `gh auth login` and `gh auth setup-git` first (Claude Code runs `git` without prompts).
-Set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` to skip the SSH attempt.
+Update later with `npx skills update annotated-diff`.
 
-Claude uses the skill on its own when you ask to review changes in the browser, or invoke it
-directly with `/annotated-diff:annotated-diff`. The plugin sets no `version`, so an update
-always fetches the latest commit: `/plugin marketplace update annotated-diff`.
+**Or with each agent's own installer:**
 
-### Manually, as a personal skill
+| Agent | Install | Update |
+|---|---|---|
+| Claude Code | `/plugin marketplace add thomas-lane/annotated-diff`<br>`/plugin install annotated-diff@annotated-diff` | `/plugin marketplace update annotated-diff` |
+| Codex | `codex plugin marketplace add thomas-lane/annotated-diff`<br>`codex plugin add annotated-diff@annotated-diff` | `codex plugin marketplace upgrade annotated-diff` |
+| Pi | `pi install git:github.com/thomas-lane/annotated-diff`<br>(SSH: `pi install git:git@github.com:thomas-lane/annotated-diff`) | `pi update git:github.com/thomas-lane/annotated-diff` |
 
-```bash
-git clone git@github.com:thomas-lane/annotated-diff.git
-cp -R annotated-diff/plugins/annotated-diff/skills/annotated-diff ~/.claude/skills/
-```
+The Claude Code commands also work from a shell as `claude plugin marketplace add ...` and
+`claude plugin install ...`. Claude Code tries SSH first; set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1`
+on a machine without a GitHub SSH key. Start a new session (or restart Codex) after installing.
 
-The skill is then available in every project as `/annotated-diff`.
+Requirements on the machine: `python3` 3.9 or later and `git`. Nothing else is installed.
 
 ## Usage
 
-Claude follows `plugins/annotated-diff/skills/annotated-diff/SKILL.md`: pick the base the
-reviewer last saw, write a notes file, render, fix any unmatched anchors, open the page. The
-script also works on its own:
+Work with your agent as usual. When you want to review what it did, ask for an annotated diff:
+
+| Agent | Type |
+|---|---|
+| Claude Code | `/annotated-diff` (as a plugin: `/annotated-diff:annotated-diff`) |
+| Codex | `$annotated-diff` (type `$` and pick it, or find it under `/skills`) |
+| Pi | `/skill:annotated-diff` |
+
+Add what you want to see after the command, or just ask in plain words. The agent picks the
+skill up on its own from requests like these:
+
+- "Show me an annotated diff of what you changed."
+- "Show me an annotated diff of everything since `main`."
+- "Walk me through this branch in the browser, with notes on why each change was made."
+- "Explain your changes line by line, in the browser."
+- "I reviewed the last page. Show me only what changed since then."
+
+The agent then:
+
+1. picks the base: the version you last saw (your last commit, the branch point, or the previous
+   review), so the page shows only what is new to you;
+2. writes one short note per meaningful change, saying what changed and why, and flagging risks,
+   behavior changes and anything it did not verify;
+3. renders the page, fixes any note it could not place, and opens it in your browser.
+
+You get one HTML file (in your system temp directory unless you ask for another place) that
+works offline and can be attached or shared as is.
+
+<table>
+  <tr>
+    <td width="50%"><img src="assets/screenshot-dark.png" alt="The same page in dark mode, with a hovered note card highlighting its line"></td>
+    <td width="50%"><img src="assets/screenshot-narrow.png" alt="On a narrow window the notes appear inline, under the lines they explain"></td>
+  </tr>
+  <tr>
+    <td>Dark mode follows the system. Hover a card to highlight its line.</td>
+    <td>On a narrow window (or with "Notes inline") the notes sit under their lines.</td>
+  </tr>
+</table>
+
+On the page:
+
+- click a card to jump to its line, or a line's numbered pin to jump to its card;
+- "Changes only" folds unchanged lines into expandable "N unchanged lines" bars;
+- ↑/↓ (or the j/k keys) step through the notes;
+- notes about the change as a whole sit in a panel at the top, together with any note whose line
+  could not be found (marked "line not found").
+
+## Demo
+
+`examples/demo/` has a before/after copy of a small module and a notes file. It renders the page
+in the screenshots:
 
 ```bash
-S=plugins/annotated-diff/skills/annotated-diff/scripts/annotated_diff.py
+examples/demo/render.sh /tmp/annotated-diff-demo.html --open
+```
+
+## Script reference (for agents and scripting)
+
+The agent follows [`skills/annotated-diff/SKILL.md`](skills/annotated-diff/SKILL.md), which
+documents the notes format and how to choose a base. The generator is one file,
+`skills/annotated-diff/scripts/annotated_diff.py` (Python 3.9+, standard library only, plus
+`git` in git mode), and also runs on its own:
+
+```bash
+S=skills/annotated-diff/scripts/annotated_diff.py
 
 # Working tree (including untracked files) against a commit
 python3 $S --repo . --base main --notes notes.json --open
 
-# A commit range, limited to some paths
-python3 $S --repo . --base v1.2 --head HEAD 'src/*.py' docs/ --exclude 'docs/generated/*' --out review.html
-
-# A branch against where it forked from main
-python3 $S --repo . --base main --head feature --merge-base --notes notes.json
+# A branch against where it forked from main, limited to some paths
+python3 $S --repo . --base main --head feature --merge-base 'src/*.py' --notes notes.json
 
 # Without git: explicit before/after pairs (/dev/null for a missing side)
-python3 $S --pair app.py old/app.py new/app.py --pair new.cfg /dev/null new/new.cfg --notes notes.json
+python3 $S --pair app.py old/app.py new/app.py --notes notes.json --out review.html
 ```
 
-`python3 $S --help` lists every option. Exit status: 0 on success, 1 with `--strict` when a note
-could not be placed or an anchor is ambiguous, 2 on bad input.
-
-### Notes file
+A notes file looks like this. `anchor` is a fragment of one added line (prefix `-` for a removed
+line); a note without an anchor is about the whole file:
 
 ```json
 {
   "comments": [
     {"file": "src/app.py", "anchor": "def load(", "label": "Bug fix",
-     "note": "Why this changed. `code` and **bold** are rendered."},
-    {"file": "src/app.py", "anchor": "-old_call(x)", "note": "Anchored to a removed line."},
-    {"file": "README.md", "note": "No anchor: a note about the whole file."}
+     "note": "Why this changed. `code` and **bold** are rendered."}
   ],
-  "general": [{"title": "Not tied to a line", "note": "..."}, "or a plain string"]
+  "general": [{"title": "Not tied to a line", "note": "..."}]
 }
 ```
 
-- `anchor` is a substring of exactly one added line of that file's diff; prefix `-` for a removed
-  line, `+` to force an added line that itself starts with `-`. If nothing matches exactly,
-  whitespace differences are ignored.
-- `label` (alias: `rule`) is an optional tag shown on the card; each label gets a stable color.
-- Notes that cannot be placed are printed to stderr with the reason and listed on the page as
-  "line not found". Ambiguous anchors are placed on the first match and reported.
-- Repeat `--notes` to merge several files.
+`python3 $S --help` lists every option. Exit status: 0 on success, 1 with `--strict` when a note
+could not be placed or an anchor is ambiguous, 2 on bad input.
 
-## Demo
-
-`examples/demo/` has a before/after pair of a small module and a notes file:
+## Development
 
 ```bash
-examples/demo/render.sh /tmp/demo.html --open
+python3 -m unittest discover -s tests   # tests (stdlib unittest)
+claude plugin validate .                 # plugin manifests (Claude Code; Codex reads the same files)
 ```
 
-## Tests
-
-```bash
-python3 -m unittest discover -s tests
 ```
-
-## Layout
-
-```
-.claude-plugin/marketplace.json            marketplace listing this repository's plugin
-plugins/annotated-diff/
-  .claude-plugin/plugin.json               plugin manifest
-  skills/annotated-diff/SKILL.md           instructions Claude follows
-  skills/annotated-diff/scripts/annotated_diff.py   the generator
-examples/demo/                             before/after files, notes.json, render.sh
-tests/test_annotated_diff.py               unit tests (stdlib unittest)
+skills/annotated-diff/SKILL.md                    the skill: instructions the agent follows
+skills/annotated-diff/scripts/annotated_diff.py   the generator
+.claude-plugin/marketplace.json                   plugin marketplace, read by Claude Code and Codex
+.claude-plugin/plugin.json                        plugin manifest; the plugin is the repository root
+examples/demo/                                    before/after files, notes.json, render.sh
+assets/                                           README images (the banner was generated with Codex)
+tests/test_annotated_diff.py                      unit tests
 ```

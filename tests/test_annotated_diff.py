@@ -12,7 +12,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "plugins/annotated-diff/skills/annotated-diff/scripts/annotated_diff.py"
+SKILL_DIR = ROOT / "skills/annotated-diff"
+SCRIPT = SKILL_DIR / "scripts/annotated_diff.py"
 _spec = importlib.util.spec_from_file_location("annotated_diff", SCRIPT)
 ad = importlib.util.module_from_spec(_spec)
 sys.modules["annotated_diff"] = ad  # dataclasses look the module up while the class is created
@@ -266,6 +267,40 @@ class GitMode(unittest.TestCase):
         self.assertEqual([(f.label, f.after) for f in files], [("mod.txt", AFTER)])
         with self.assertRaises(ad.UsageError):
             ad.collect_git(str(self.repo), "no-such-ref", None, [], [], True, False, 1000)
+
+
+class SkillPackaging(unittest.TestCase):
+    """The skill must load unchanged in Claude Code, Codex and Pi (Agent Skills format)."""
+
+    SPEC_FIELDS = {"name", "description", "license", "compatibility", "metadata", "allowed-tools"}
+
+    def frontmatter(self):
+        text = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
+        m = re.match(r"---\n(.*?)\n---\n(.*)", text, re.S)
+        self.assertIsNotNone(m, "SKILL.md must start with YAML frontmatter")
+        fields = dict(re.findall(r"^([A-Za-z][\w-]*):[ \t]*(.*)$", m.group(1), re.M))
+        return fields, m.group(2)
+
+    def test_frontmatter_follows_the_agent_skills_spec(self):
+        fields, _ = self.frontmatter()
+        self.assertLessEqual(set(fields), self.SPEC_FIELDS)
+        self.assertEqual(fields["name"], SKILL_DIR.name)
+        self.assertRegex(fields["name"], r"^[a-z0-9]+(-[a-z0-9]+)*$")
+        self.assertTrue(0 < len(fields["description"]) <= 1024)
+
+    def test_instructions_use_no_harness_specific_variables(self):
+        _, body = self.frontmatter()
+        self.assertNotIn("${", body)
+        self.assertNotRegex(body, r"\$(CLAUDE|CODEX|PI)_")
+        self.assertIn("scripts/annotated_diff.py", body)
+        self.assertTrue(SCRIPT.is_file())
+
+    def test_plugin_marketplace_points_at_the_repository_root(self):
+        market = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
+        plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
+        (entry,) = market["plugins"]
+        self.assertEqual((entry["name"], entry["source"]), (plugin["name"], "./"))
+        self.assertTrue((ROOT / "skills" / plugin["name"] / "SKILL.md").is_file())
 
 
 if __name__ == "__main__":

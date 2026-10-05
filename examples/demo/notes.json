@@ -4,6 +4,8 @@
      "note": "Prices are floats in the stock file, so summing them drifted (`0.1 + 0.2 != 0.3`). Totals now use `Decimal`."},
     {"file": "inventory.py", "anchor": "Decimal(str(item[\"price\"]))", "label": "Bug fix",
      "note": "Converting through `str` keeps the price as written (`Decimal(0.1)` would carry the float's binary error)."},
+    {"file": "inventory.py", "anchor": "if qty < 0:", "label": "Validation",
+     "note": "A negative restock used to be accepted and silently reduce the stock. It is now an error."},
     {"file": "inventory.py", "anchor": "-item[\"qty\"] = qty", "label": "Behavior change",
      "note": "`restock` used to **overwrite** the quantity. Callers pass the number of units received, so it now adds them."},
     {"file": "inventory.py", "anchor": "raise KeyError", "label": "Behavior change",
