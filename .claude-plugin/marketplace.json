@@ -1,0 +1,14 @@
+{
+  "name": "annotated-diff",
+  "description": "Review an agent's changes in the browser: whole-file diffs with notes in the margin.",
+  "owner": {
+    "name": "Thomas Lane"
+  },
+  "plugins": [
+    {
+      "name": "annotated-diff",
+      "source": "./plugins/annotated-diff",
+      "description": "Render whole-file diffs with review notes anchored to changed lines, as one self-contained HTML page."
+    }
+  ]
+}

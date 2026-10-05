@@ -1,0 +1,9 @@
+{
+  "name": "annotated-diff",
+  "description": "Render whole-file diffs with review notes anchored to changed lines, as one self-contained HTML page.",
+  "author": {
+    "name": "Thomas Lane"
+  },
+  "repository": "https://github.com/thomas-lane/annotated-diff",
+  "keywords": ["diff", "code-review", "review", "html"]
+}
